@@ -1,0 +1,19 @@
+---
+title: "HW #4"
+author: "Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  pdf_document: 
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(RPostgreSQL)
+drv <- dbDriver("PostgreSQL")
+first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
+```
+
+```{r R.options = list(max.print = 100)}
+
+```
