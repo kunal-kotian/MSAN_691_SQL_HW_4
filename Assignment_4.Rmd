@@ -7,6 +7,8 @@ output:
     latex_engine: xelatex
 ---
 
+---------------------------------------------------------------------------
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(RPostgreSQL)
@@ -14,6 +16,52 @@ drv <- dbDriver("PostgreSQL")
 first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
 ```
 
+
+# 4A: Aggregate Functions and Dates
+
+## Q. (1)
+
 ```{r R.options = list(max.print = 100)}
 
 ```
+
+## Q. (2)
+
+```{r R.options = list(max.print = 100)}
+
+```
+
+
+\newpage
+
+# 4B: Aggregation and Dates
+
+## Q. (1)
+
+```{r R.options = list(max.print = 100)}
+
+```
+
+## Q. (2)
+
+```{r R.options = list(max.print = 100)}
+
+```
+
+\newpage
+
+# 4C: Information Schema and Exploring the Relationship between Returns and Dollar Volume
+
+## Q. (1)
+
+```{r R.options = list(max.print = 100)}
+
+```
+
+## Q. (2)
+
+```{r R.options = list(max.print = 100)}
+
+```
+
+
