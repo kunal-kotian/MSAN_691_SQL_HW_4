@@ -21,9 +21,130 @@ first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port =
 
 ## Q. (1)
 
-```{r R.options = list(max.print = 100)}
+(a)
 
+```{r R.options = list(max.print = 10)}
+ select count(1) from stocks2016.d2010;
 ```
+
+(b)
+
+```{r R.options = list(max.print = 10)}
+select count(1) from (select distinct cusip 
+  from stocks2016.d2010) as uniqcusips;
+```
+
+(c)
+
+```{r R.options = list(max.print = 10)}
+select count(1) from (select distinct cusip 
+from stocks2016.d2011) as uniqcusips;
+```
+
+(d)
+
+```{r R.options = list(max.print = 10)}
+select cusip from
+(select cusip, count(1) as ct 
+  from stocks2016.d2010 group by cusip) as grouped
+where ct < 50;
+```
+
+(e)
+
+```{r R.options = list(max.print = 10)}
+select count(1) from
+(select cusip from
+(select cusip, count(1) as ct 
+  from stocks2016.d2010 group by cusip) as grouped
+where ct < 50) as smallcusips;
+```
+
+(f)
+
+```{r R.options = list(max.print = 10)}
+select
+sum(case when cusips_count < 50 then 1 else 0 end) as less_than_50,
+sum(case when cusips_count > 100 then 1 else 0 end) as more_than_100
+from (
+select count(cusip) as cusips_count from stocks2016.d2010 
+group by cusip) q1;
+```
+
+(g)
+
+```{r R.options = list(max.print = 10)}
+select numtype, count(1)
+from
+    (select case 
+        when cusips_count < 50 then 'less than 50' 
+        when cusips_count > 100 then 'greater than 100'
+        end as numtype
+    from (
+    select count(cusip) as cusips_count 
+    from stocks2016.d2010 
+    group by cusip) q1) q2
+where numtype is not null
+group by numtype;
+```
+
+
+(h)
+
+```{r R.options = list(max.print = 10)}
+select numtype, avg(annual_vol) as avg_annual_vol
+from
+    (select annual_vol, case
+        when days_count < 50 then 'less than 50'
+        when days_count between 50 and 100 then 'between 50 and 100'
+        when days_count > 100 then 'greater than 100'
+        end as numtype
+    from (
+    select cusip, sum(vol) as annual_vol, count(retdate) as days_count
+    from stocks2016.d2010
+    group by cusip) as q1) as q2
+where numtype is not null
+group by numtype;
+```
+
+(i)
+
+```{r R.options = list(max.print = 10)}
+select numtype, avg(avg_vol) as avg_annual_vol
+from
+    (select avg_vol, case
+        when days_count < 50 then 'less than 50'
+        when days_count between 50 and 100 then 'between 50 and 100'
+        when days_count > 100 then 'greater than 100'
+        end as numtype
+    from (
+    select cusip, avg(vol) as avg_vol, count(retdate) as days_count
+    from stocks2016.d2010
+    group by cusip) as q1) as q2
+where numtype is not null
+group by numtype;
+ 
+```
+
+(j)
+
+```{r R.options = list(max.print = 10)}
+select count(*)
+from (select distinct permno
+    from (select permno from stocks2016.d2010
+        where vol*prc > 100000000 )q1)q2;
+   
+```
+
+(k)
+
+```{r R.options = list(max.print = 10)}
+select count(distinct permno)::float/(select count(distinct permno) 
+from stocks2016.d2010) 
+from stocks2016.d2010 where prc*vol > 100000000
+   
+```
+
 
 ## Q. (2)
 
