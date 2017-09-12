@@ -175,10 +175,35 @@ from stocks2016.d2010 where prc*vol > 100000000
 
 ## Q. (1)
 
-```{r R.options = list(max.print = 100)}
+(a)
 
+```{r R.options = list(max.print = 100)}
+qn_4c1a <- c("select count(1), data_type  from information_schema.columns
+group by data_type;")
+dbGetQuery(first_database,qn_4c1a)
 ```
 
+(b)
+
+```{r R.options = list(max.print = 100)}
+qn_4c1b <- c("select  distinct(data_type)  from information_schema.columns;")
+dbGetQuery(first_database,qn_4c1b)
+```
+
+(c)
+
+```{r R.options = list(max.print = 100)}
+qn_4c1c <- c("select count(1),data_type,table_schema from information_schema.columns
+group by data_type,table_schema;")
+dbGetQuery(first_database,qn_4c1c)
+```
+
+(d)
+
+```{r R.options = list(max.print = 100)}
+
+
+```
 ## Q. (2)
 
 ```{r R.options = list(max.print = 100)}
