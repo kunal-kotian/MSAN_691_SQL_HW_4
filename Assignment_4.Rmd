@@ -2,9 +2,7 @@
 title: "HW #4"
 author: "Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-output: 
-  pdf_document: 
-    latex_engine: xelatex
+output: pdf_document
 ---
 
 ---------------------------------------------------------------------------
@@ -24,57 +22,63 @@ first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port =
 (a)
 
 ```{r R.options = list(max.print = 10)}
- select count(1) from stocks2016.d2010;
+qn_1a <- c("select count(1) from stocks2016.d2010;")
+dbGetQuery(first_database,qn_1a)
 ```
 
 (b)
 
 ```{r R.options = list(max.print = 10)}
-select count(1) from (select distinct cusip 
-  from stocks2016.d2010) as uniqcusips;
+qn_1b <- c("select count(1) from (select distinct cusip 
+  from stocks2016.d2010) as uniqcusips;")
+dbGetQuery(first_database,qn_1b)
 ```
 
 (c)
 
 ```{r R.options = list(max.print = 10)}
-select count(1) from (select distinct cusip 
-from stocks2016.d2011) as uniqcusips;
+qn_1c <- c("select count(1) from (select distinct cusip 
+from stocks2016.d2011) as uniqcusips;")
+dbGetQuery(first_database,qn_1c)
 ```
 
 (d)
 
 ```{r R.options = list(max.print = 10)}
-select cusip from
+qn_1d <- c("select cusip from
 (select cusip, count(1) as ct 
   from stocks2016.d2010 group by cusip) as grouped
-where ct < 50;
+where ct < 50;")
+dbGetQuery(first_database,qn_1d)
 ```
 
 (e)
 
 ```{r R.options = list(max.print = 10)}
-select count(1) from
+qn_1e <- c("select count(1) from
 (select cusip from
 (select cusip, count(1) as ct 
   from stocks2016.d2010 group by cusip) as grouped
-where ct < 50) as smallcusips;
+where ct < 50) as smallcusips;")
+dbGetQuery(first_database,qn_1e)
 ```
 
 (f)
 
 ```{r R.options = list(max.print = 10)}
-select
+qn_1f <- c("select
 sum(case when cusips_count < 50 then 1 else 0 end) as less_than_50,
 sum(case when cusips_count > 100 then 1 else 0 end) as more_than_100
 from (
 select count(cusip) as cusips_count from stocks2016.d2010 
-group by cusip) q1;
+group by cusip) q1;")
+dbGetQuery(first_database,qn_1f)
 ```
 
 (g)
 
 ```{r R.options = list(max.print = 10)}
-select numtype, count(1)
+qn_1g <- c("select numtype, count(1)
 from
     (select case 
         when cusips_count < 50 then 'less than 50' 
@@ -85,14 +89,15 @@ from
     from stocks2016.d2010 
     group by cusip) q1) q2
 where numtype is not null
-group by numtype;
+group by numtype;")
+dbGetQuery(first_database,qn_1g)
 ```
 
 
 (h)
 
 ```{r R.options = list(max.print = 10)}
-select numtype, avg(annual_vol) as avg_annual_vol
+qn_1h <- c("select numtype, avg(annual_vol) as avg_annual_vol
 from
     (select annual_vol, case
         when days_count < 50 then 'less than 50'
@@ -104,13 +109,14 @@ from
     from stocks2016.d2010
     group by cusip) as q1) as q2
 where numtype is not null
-group by numtype;
+group by numtype;")
+dbGetQuery(first_database,qn_1h)
 ```
 
 (i)
 
 ```{r R.options = list(max.print = 10)}
-select numtype, avg(avg_vol) as avg_annual_vol
+qn_1i <- c("select numtype, avg(avg_vol) as avg_annual_vol
 from
     (select avg_vol, case
         when days_count < 50 then 'less than 50'
@@ -122,27 +128,27 @@ from
     from stocks2016.d2010
     group by cusip) as q1) as q2
 where numtype is not null
-group by numtype;
- 
+group by numtype;")
+dbGetQuery(first_database,qn_1i)
 ```
 
 (j)
 
 ```{r R.options = list(max.print = 10)}
-select count(*)
+qn_1j <- c("select count(*)
 from (select distinct permno
     from (select permno from stocks2016.d2010
-        where vol*prc > 100000000 )q1)q2;
-   
+        where vol*prc > 100000000 )q1)q2;")
+dbGetQuery(first_database,qn_1j)
 ```
 
 (k)
 
 ```{r R.options = list(max.print = 10)}
-select count(distinct permno)::float/(select count(distinct permno) 
+qn_1k <- c("select count(distinct permno)::float/(select count(distinct permno) 
 from stocks2016.d2010) 
-from stocks2016.d2010 where prc*vol > 100000000
-   
+from stocks2016.d2010 where prc*vol > 100000000")
+dbGetQuery(first_database,qn_1k)
 ```
 
 
@@ -160,7 +166,18 @@ from stocks2016.d2010 where prc*vol > 100000000
 ## Q. (1)
 
 ```{r R.options = list(max.print = 100)}
-
+qn_2a <- c("select quarter from
+    (select case
+        when date_part('quarter', retdate) = 1 then 'Q1'
+        when date_part('quarter', retdate) = 2 then 'Q2'
+        when date_part('quarter', retdate) = 3 then 'Q3'
+        when date_part('quarter', retdate) = 4 then 'Q4'
+        else null
+        end as quarter
+    from stocks2016.d2010) as InnerQ
+    group by 1
+    order by count(quarter) desc limit 1;")
+dbGetQuery(first_database,qn_2a)
 ```
 
 ## Q. (2)
