@@ -205,7 +205,7 @@ qn_4c1d <- c("select table_schema
     ,count(case when data_type ='' then 1 end) as field_blank 
     ,count(case when data_type ='anyarray' then 1 end) as field_array
     ,count(case when data_type ='inet' then 1 end) as field_inet
-    ,count(case when data_type ='"char"' then 1 end) as field_char
+    ,count(case when data_type ='''char''' then 1 end) as field_char
     ,count(case when data_type ='timestamp with time zone' then 1 end) as field_time
     ,count(case when data_type ='xid' then 1 end) as field_xid
     ,count(case when data_type ='name' then 1 end) as field_name
@@ -230,10 +230,35 @@ from information_schema.columns
 group by 1;")
 dbGetQuery(first_database,qn_4c1d)
 ```
+(e)
+
+```{r R.options = list(max.print = 100)}
+qn_4c1e <- c("select count(1),data_type,table_schema from information_schema.columns
+where table_schema = 'information_schema'
+group by data_type,table_schema;")
+Query <- dbGetQuery(first_database,qn_4c1e)
+Query
+pie(unlist(Query[1]),unlist(Query[2]))
+```
+
 ## Q. (2)
 
 ```{r R.options = list(max.print = 100)}
-
+qn_4c1c <- c("select count(1),data_type,table_schema from information_schema.columns
+group by data_type,table_schema;")
+dbGetQuery(first_database,qn_4c1c)
 ```
 
+
+```{r R.options = list(max.print = 100)}
+qn_4c1c <- c("select count(1),data_type,table_schema from information_schema.columns
+group by data_type,table_schema;")
+dbGetQuery(first_database,qn_4c1c)
+```
+
+```{r R.options = list(max.print = 100)}
+qn_4c1c <- c("select count(1),data_type,table_schema from information_schema.columns
+group by data_type,table_schema;")
+dbGetQuery(first_database,qn_4c1c)
+```
 
