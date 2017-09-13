@@ -10,6 +10,9 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(RPostgreSQL)
+library(tidyverse)
+library(pastecs)
+library(GGally)
 drv <- dbDriver("PostgreSQL")
 first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
 ```
@@ -349,14 +352,75 @@ dbGetQuery(first_database,qn_4c1c)
 
 (d)
 
-```{r R.options = list(max.print = 10)}
-
-
+```{r R.options = list(max.print = 100)}
+qn_4c1d <- c("select table_schema
+    ,count(case when data_type ='' then 1 end) as field_blank 
+    ,count(case when data_type ='anyarray' then 1 end) as field_array
+    ,count(case when data_type ='inet' then 1 end) as field_inet
+    ,count(case when data_type ='''char''' then 1 end) as field_char
+    ,count(case when data_type ='timestamp with time zone' then 1 end) as field_time
+    ,count(case when data_type ='xid' then 1 end) as field_xid
+    ,count(case when data_type ='name' then 1 end) as field_name
+    ,count(case when data_type ='bytea' then 1 end) as field_byte
+    ,count(case when data_type ='date' then 1 end) as field_date
+    ,count(case when data_type ='double precision' then 1 end) as field_doub
+    ,count(case when data_type ='pg_node_tree' then 1 end) as field_pg_n
+    ,count(case when data_type ='real' then 1 end) as field_real
+    ,count(case when data_type ='interval' then 1 end) as field_inte
+    ,count(case when data_type ='character varying' then 1 end) as field_char
+    ,count(case when data_type ='abstime' then 1 end) as field_abst
+    ,count(case when data_type ='bigint' then 1 end) as field_bigi
+    ,count(case when data_type ='smallint' then 1 end) as field_smal
+    ,count(case when data_type ='boolean' then 1 end) as field_bool
+    ,count(case when data_type ='integer' then 1 end) as field_inte
+    ,count(case when data_type ='ARRAY' then 1 end) as field_ARRA
+    ,count(case when data_type ='oid' then 1 end) as field_oid
+    ,count(case when data_type ='pg_lsn' then 1 end) as field_pg_l
+    ,count(case when data_type ='regproc' then 1 end) as field_regp
+    ,count(case when data_type ='text' then 1 end) as field_text
+from information_schema.columns
+group by 1;")
+dbGetQuery(first_database,qn_4c1d)
 ```
+(e)
+
+```{r R.options = list(max.print = 100)}
+qn_4c1e <- c("select count(1),data_type,table_schema from information_schema.columns
+where table_schema = 'information_schema'
+group by data_type,table_schema;")
+Query <- dbGetQuery(first_database,qn_4c1e)
+Query
+pie(unlist(Query[1]),unlist(Query[2]))
+```
+
 ## Q. (2)
 
-```{r R.options = list(max.print = 10)}
+(a)
+
+```{r R.options = list(max.print = 100)}
+qn_4c1a <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
+where ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%';")
+new_data <- dbGetQuery(first_database,qn_4c1a)
+new_data
 
 ```
+
+(b)
+
+
+```{r R.options = list(max.print = 100)}
+plot(new_data$return,new_data$dollar_volume,type = 'p')
+```
+
+(c)
+
+```{r R.options = list(max.print = 100)}
+case <- lm(formula = new_data$dollar_volume ~ new_data$return)
+print(summary(case))
+```
+
+#With R approximately 0 there is no apperatn linear relationship between return and dollar volume
+
+
 
 
