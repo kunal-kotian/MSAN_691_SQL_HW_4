@@ -318,9 +318,6 @@ group by 1;")
 dbGetQuery(first_database,qn_4c1d)
 ```
 (e)
-=======
-```{r R.options = list(max.print = 10)}
->>>>>>> 4b10bf1407b6cb6bdf09c1856bc87837580f4350
 
 ```{r R.options = list(max.print = 100)}
 qn_4c1e <- c("select count(1),data_type,table_schema from information_schema.columns
@@ -333,15 +330,14 @@ pie(unlist(Query[1]),unlist(Query[2]))
 
 ## Q. (2)
 
-<<<<<<< HEAD
 ```{r R.options = list(max.print = 100)}
-qn_4c1c <- c("select count(1),data_type,table_schema from information_schema.columns
-group by data_type,table_schema;")
-dbGetQuery(first_database,qn_4c1c)
+qn_4c1a <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
+where ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%';")
+new_data <- dbGetQuery(first_database,qn_4c1a)
+new_data
+plot(new_data$return,new_data$dollar_volume,type = 'p')
 ```
-=======
-```{r R.options = list(max.print = 10)}
->>>>>>> 4b10bf1407b6cb6bdf09c1856bc87837580f4350
+
 
 
 ```{r R.options = list(max.print = 100)}
