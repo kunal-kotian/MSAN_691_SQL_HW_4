@@ -289,7 +289,6 @@ dbGetQuery(first_database,qn_4c1c)
 
 (d)
 
-<<<<<<< HEAD
 ```{r R.options = list(max.print = 100)}
 qn_4c1d <- c("select table_schema
     ,count(case when data_type ='' then 1 end) as field_blank 
