@@ -10,6 +10,9 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(RPostgreSQL)
+library(tidyverse)
+library(pastecs)
+library(GGally)
 drv <- dbDriver("PostgreSQL")
 first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
 ```
@@ -347,9 +350,15 @@ new_data
 plot(new_data$return,new_data$dollar_volume,type = 'p')
 ```
 
+(c)
+
 ```{r R.options = list(max.print = 100)}
-qn_4c1c <- c("select count(1),data_type,table_schema from information_schema.columns
-group by data_type,table_schema;")
-dbGetQuery(first_database,qn_4c1c)
+case <- lm(formula = new_data$dollar_volume ~ new_data$return)
+print(summary(case))
 ```
+
+#With R approximately 0 there is no apperatn linear relationship between return and dollar volume
+
+
+
 
