@@ -157,10 +157,49 @@ dbGetQuery(first_database,qn_1k)
 
 ## Q. (2)
 
-```{r R.options = list(max.print = 100)}
 
+
+```{r R.options = list(max.print = 100)}
+qn_4a2a <- c("select count(vol), date_part('dow',retdate::date) as daysofweek from stocks2016.d2010
+group by daysofweek order by count desc;")
+dbGetQuery(first_database,qn_4a2a)
 ```
 
+Wednesday is the highest volume.
+
+```{r R.options = list(max.print = 100)}
+qn_4a2b <- c("select avg(vol), date_part('dow',retdate::date) as daysofweek from stocks2016.d2010
+group by daysofweek order by avg desc;")
+dbGetQuery(first_database,qn_4a2b)
+```
+
+thursday has the highest average volume
+
+```{r R.options = list(max.print = 100)}
+qn_4a2c <- c("select avg(cast(ret as numeric)),date_part('month', retdate::date) as months, date_part('dow', retdate::date) as daysofweek from stocks2016.d2010
+where ret != 'B' and ret !='C'
+group by daysofweek, months order by avg desc ;
+")
+dbGetQuery(first_database,qn_4a2c)
+```
+
+May, Monday seems to have the highest average returns. 
+
+```{r R.options = list(max.print = 100)}
+qn_4a2d <- c("select avg(case when vol between 1000000 and 2000000 then vol end) as avg1, 
+avg(case when vol < 1000000 or vol >2000000 then vol end) as avg2, 
+(case when daysofweek = 1 then 'MONDAY' 
+when daysofweek = 2 then 'TUESDAY' 
+WHEN daysofweek = 3 then 'WEDNESDAY' 
+when daysofweek = 4 then 'THURSDAY' 
+when daysofweek = 5 then 'FRIDAY' END) as c1
+from 
+(select vol, date_part('dow',retdate::date)
+as daysofweek from stocks2016.d2010) 
+as innerq
+group by c1;")
+dbGetQuery(first_database,qn_4a2d)
+```
 
 \newpage
 
