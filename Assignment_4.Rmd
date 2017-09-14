@@ -158,46 +158,52 @@ dbGetQuery(first_database,qn_1k)
 ## Q. (2)
 
 
-
+(a)
 ```{r R.options = list(max.print = 100)}
-qn_4a2a <- c("select count(vol), date_part('dow',retdate::date) as daysofweek from stocks2016.d2010
-group by daysofweek order by count desc;")
+qn_4a2a <- c("select day from
+(select vol, date_part('dow', retdate) as day
+from stocks2016.d2010)q1
+group by day
+order by sum(vol) desc
+limit 1;")
 dbGetQuery(first_database,qn_4a2a)
 ```
 
-Wednesday is the highest volume.
 
+(b)
 ```{r R.options = list(max.print = 100)}
 qn_4a2b <- c("select avg(vol), date_part('dow',retdate::date) as daysofweek from stocks2016.d2010
-group by daysofweek order by avg desc;")
+group by daysofweek order by avg desc
+limit 1;")
 dbGetQuery(first_database,qn_4a2b)
 ```
 
-thursday has the highest average volume
 
+(c)
 ```{r R.options = list(max.print = 100)}
 qn_4a2c <- c("select avg(cast(ret as numeric)),date_part('month', retdate::date) as months, date_part('dow', retdate::date) as daysofweek from stocks2016.d2010
 where ret != 'B' and ret !='C'
-group by daysofweek, months order by avg desc ;
+group by daysofweek, months order by avg desc 
+limit 1;
 ")
 dbGetQuery(first_database,qn_4a2c)
 ```
 
-May, Monday seems to have the highest average returns. 
 
+(d)
 ```{r R.options = list(max.print = 100)}
-qn_4a2d <- c("select avg(case when vol between 1000000 and 2000000 then vol end) as avg1, 
-avg(case when vol < 1000000 or vol >2000000 then vol end) as avg2, 
-(case when daysofweek = 1 then 'MONDAY' 
-when daysofweek = 2 then 'TUESDAY' 
-WHEN daysofweek = 3 then 'WEDNESDAY' 
-when daysofweek = 4 then 'THURSDAY' 
-when daysofweek = 5 then 'FRIDAY' END) as c1
-from 
-(select vol, date_part('dow',retdate::date)
-as daysofweek from stocks2016.d2010) 
-as innerq
-group by c1;")
+qn_4a2d <- c("select
+case 
+when date_part('dow', retdate) = 1 then 'Monday'
+when date_part('dow', retdate) = 2 then 'Tuesday'
+when date_part('dow', retdate) = 3 then 'Wednesday'
+when date_part('dow', retdate) = 4 then 'Thursday'
+when date_part('dow', retdate) = 5 then 'Friday' 
+end as day,
+avg(case when vol between 1000000 and 2000000 then vol end) as C2,
+avg(case when vol < 1000000 or vol > 2000000 then vol end) as C3
+from stocks2016.d2010
+group by day;")
 dbGetQuery(first_database,qn_4a2d)
 ```
 
@@ -356,7 +362,7 @@ dbGetQuery(first_database,qn_2j)
 
 ## Q. (2)
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 
 ```
 
@@ -391,7 +397,7 @@ dbGetQuery(first_database,qn_4c1c)
 
 (d)
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 qn_4c1d <- c("select table_schema
     ,count(case when data_type ='' then 1 end) as field_blank 
     ,count(case when data_type ='anyarray' then 1 end) as field_array
@@ -423,7 +429,7 @@ dbGetQuery(first_database,qn_4c1d)
 ```
 (e)
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 qn_4c1e <- c("select count(1),data_type,table_schema from information_schema.columns
 where table_schema = 'information_schema'
 group by data_type,table_schema;")
@@ -436,7 +442,7 @@ pie(unlist(Query[1]),unlist(Query[2]))
 
 (a)
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 qn_4c2a <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
 where ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%';")
 new_data <- dbGetQuery(first_database,qn_4c2a)
@@ -447,13 +453,13 @@ new_data
 (b)
 
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 plot(new_data$return,new_data$dollar_volume,type = 'p')
 ```
 
 (c)
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 case <- lm(formula = new_data$dollar_volume ~ new_data$return)
 print(summary(case))
 ```
@@ -461,7 +467,7 @@ print(summary(case))
 #With R approximately 0 there is no apperant linear relationship between return and dollar volume
 
 (d)
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 qn_4c2d <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
 where  (ret::numeric) between -.1 and .1 and (abs(vol*prc::bigint)/1000)*1000 > 250000000 and ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%';")
 new_data <- dbGetQuery(first_database,qn_4c2d)
@@ -474,7 +480,7 @@ plot(new_data$return,new_data$dollar_volume,type = 'p')
 
 (e)
 
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 case <- lm(formula = new_data$dollar_volume ~ new_data$return)
 print(summary(case))
 ```
@@ -483,7 +489,7 @@ print(summary(case))
 #With R approximately 0 there is no apperant linear relationship between return and dollar volume
 
 (f)
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 qn_4c2f <- c("select avg(return^2)-avg(return)^2 as variance_return, avg(dollar_volume^2)-avg(dollar_volume)^2 as dollar_value_variance from (SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
 where  ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%') as innerq;")
 dbGetQuery(first_database,qn_4c2f)
@@ -491,7 +497,7 @@ dbGetQuery(first_database,qn_4c2f)
 ```
 
 (g)
-```{r R.options = list(max.print = 100)}
+```{r R.options = list(max.print = 10)}
 qn_4c2g <- c("select avg(return * dollar_volume) - (avg(return)*avg(dollar_volume)) as covariance_of_return_dollar_value from 
 (SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
 where  ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%') as innerq;")
