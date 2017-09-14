@@ -362,9 +362,132 @@ dbGetQuery(first_database,qn_2j)
 
 ## Q. (2)
 
-```{r R.options = list(max.print = 10)}
+(a)
 
+```{r R.options = list(max.print = 10)}
+qn_4b2a <- c("select avg(ct) as avgct
+from
+   (select avg(swpeakhr) as ct, county
+    from    cls.traffic
+    where county like 'A%'
+    group by county) as innerQ;")
+dbGetQuery(first_database,qn_4b2a)
 ```
+
+(b)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2b <- c("select county, avg(swpeakhr) as avgpeak
+from cls.traffic 
+where county like 'A%'
+group by county;")
+dbGetQuery(first_database,qn_4b2b)
+```
+
+(c)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2c <- c("select avg(ct) as avgct
+from
+   (select avg(swpeakhr) as ct, county
+    from    cls.traffic
+    where county like 'A%' or county like 'M%'
+    group by county) as innerQ;")
+dbGetQuery(first_database,qn_4b2c)
+```
+
+(d)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2d <- c("select 
+    avg(case when county like 'A%' then avg_speed end) as A_type,
+    avg(case when county like 'M%' then avg_speed end) as B_type
+from(
+    select county, avg(swpeakhr) as avg_speed
+    from cls.traffic 
+    group by county 
+    )as q2;")
+dbGetQuery(first_database,qn_4b2d)
+```
+
+(e)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2e <- c("select county_type, avg(avg_1) as avg_total
+from(
+    select 
+    case when county like 'A%'then 'type_A'
+         when county like 'M%'then 'type_M'
+    end as county_type,avg_1
+    from(select county, avg(swpeakhr) as avg_1
+         from cls.traffic
+         group by county 
+    ) as q3)as q4
+where county_type is not null
+group by county_type;")
+dbGetQuery(first_database,qn_4b2e)
+```
+
+(f)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2f <- c("select
+    count(distinct routeno) as no_route
+from cls.traffic
+where swpeakhr > 5000 or nepeakhr < 2000;")
+dbGetQuery(first_database,qn_4b2f)
+```
+
+(g)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2g <- c("select avg(ratio) as ratio_total
+from(
+select county, routeno,avg(nepeakhr/swpeakhr) as ratio
+from cls.traffic
+group by county, routeno
+)as q3;")
+dbGetQuery(first_database,qn_4b2g)
+```
+
+(h)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2h <- c("")
+dbGetQuery(first_database,qn_4b2h)
+```
+
+(i)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2i <- c("select 
+    count(case when swavgday_1 < 5000 then 1 else null end) as small_part,
+    count(case when swavgday_1 > 5000 then 1 else null end) as big_part
+from(select county, routeno, avg(swavgday) as swavgday_1,
+        avg(nepeakhr/swpeakhr) as ratio, count(routeno) as total_1
+    from cls.traffic 
+    group by county, routeno)as q1
+where ratio < 1;")
+dbGetQuery(first_database,qn_4b2i)
+```
+
+(j)
+
+```{r R.options = list(max.print = 10)}
+qn_4b2j <- c("select 
+    count(case when swmaxday > 15000 then 1 else null end) as big_part,
+    count(case when swmaxday between 10000 and 15000 then 1 else null end) as medium_part,
+    count(case when swmaxday between 0 and 10000 then 1 else null end) as small_part
+from( select county, routeno, max(swavgday) as swmaxday 
+      from cls.traffic group by county, routeno
+    )q1
+where county IN(select county from cls.traffic where swavgday > 15000);
+
+")
+dbGetQuery(first_database,qn_4b2j)
+```
+
+
 
 \newpage
 
