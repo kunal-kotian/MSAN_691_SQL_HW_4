@@ -314,6 +314,24 @@ where permno in
 dbGetQuery(first_database,qn_2j)
 ```
 
+(k)
+
+```{r}
+qn_2k <- c("select
+    count(case when num_tues = 4 and num_wed = 4 and avg_price_tues > avg_price_wed then 1 end) as days_tues_greater,
+    count(case when num_tues = 4 and num_wed = 4 and avg_price_tues < avg_price_wed then 1 end) as days_tues_lower
+from
+    (select permno,
+        count(case when date_part('month', retdate) = 1 and date_part('dow', retdate) = 2 then 1 end) as num_tues,
+        count(case when date_part('month', retdate) = 1 and date_part('dow', retdate) = 3 then 1 end) as num_wed,
+        avg(case when date_part('dow', retdate) = 2 and date_part('month', retdate) = 1 then prc end) as avg_price_tues,
+        avg(case when date_part('dow', retdate) = 3 and date_part('month', retdate) = 1 then prc end) as avg_price_wed
+    from stocks2016.d2010
+    where prc is not null
+    group by permno) as InnerQ;")
+dbGetQuery(first_database,qn_2k)
+```
+
 
 ## Q. (2)
 
@@ -398,9 +416,9 @@ pie(unlist(Query[1]),unlist(Query[2]))
 (a)
 
 ```{r R.options = list(max.print = 100)}
-qn_4c1a <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
+qn_4c2a <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
 where ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%';")
-new_data <- dbGetQuery(first_database,qn_4c1a)
+new_data <- dbGetQuery(first_database,qn_4c2a)
 new_data
 
 ```
@@ -419,8 +437,44 @@ case <- lm(formula = new_data$dollar_volume ~ new_data$return)
 print(summary(case))
 ```
 
-#With R approximately 0 there is no apperatn linear relationship between return and dollar volume
+#With R approximately 0 there is no apperant linear relationship between return and dollar volume
+
+(d)
+```{r R.options = list(max.print = 100)}
+qn_4c2d <- c("SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
+where  (ret::numeric) between -.1 and .1 and (abs(vol*prc::bigint)/1000)*1000 > 250000000 and ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%';")
+new_data <- dbGetQuery(first_database,qn_4c2d)
+new_data
+plot(new_data$return,new_data$dollar_volume,type = 'p')
+
+```
+
+#there does to seem to be alinear relationship between return and dollar volume 
+
+(e)
+
+```{r R.options = list(max.print = 100)}
+case <- lm(formula = new_data$dollar_volume ~ new_data$return)
+print(summary(case))
+```
 
 
+#With R approximately 0 there is no apperant linear relationship between return and dollar volume
 
+(f)
+```{r R.options = list(max.print = 100)}
+qn_4c2f <- c("select avg(return^2)-avg(return)^2 as variance_return, avg(dollar_volume^2)-avg(dollar_volume)^2 as dollar_value_variance from (SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
+where  ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%') as innerq;")
+dbGetQuery(first_database,qn_4c2f)
+
+```
+
+(g)
+```{r R.options = list(max.print = 100)}
+qn_4c2g <- c("select avg(return * dollar_volume) - (avg(return)*avg(dollar_volume)) as covariance_of_return_dollar_value from 
+(SELECT round(cast(ret as numeric),5)*100 as return, (abs(vol*prc::bigint)/1000)*1000 as dollar_volume  FROM stocks2016.d2010
+where  ret != 'C' and ret != 'B' and md5(permno::varchar(100)) like '0%') as innerq;")
+dbGetQuery(first_database,qn_4c2g)
+
+``` 
 
