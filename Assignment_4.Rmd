@@ -251,6 +251,69 @@ from
 dbGetQuery(first_database,qn_2e)
 ```
 
+(f)
+
+```{r}
+qn_2f <- c("select date_part('month', retdate) as month, count(distinct retdate)
+from stocks2016.d2010
+group by 1;")
+dbGetQuery(first_database,qn_2f)
+```
+
+(g)
+
+```{r}
+qn_2g <- c("select permno, max(abs(prc)) - min(abs(prc)) as price_diff
+from stocks2016.d2010
+where prc is not null and date_part('month', retdate) = 12
+group by permno
+having count(distinct retdate) = 22;")
+dbGetQuery(first_database,qn_2g)
+```
+
+(h)
+
+```{r}
+qn_2h <- c("
+select avg(max_price - min_price) as avg_price_diff
+from
+    (select permno, max(abs(prc)) as max_price, min(abs(prc)) as min_price
+    from stocks2016.d2010
+    where prc is not null and date_part('dow', retdate) = 2 and date_part('month', retdate) = 1
+    group by permno
+    having count(distinct retdate) = 4) as InnerQ;")
+dbGetQuery(first_database,qn_2h)
+```
+
+(i)
+
+```{r}
+qn_2i <- c("select avg(max_price - min_price) as avg_price_diff
+from
+    (select permno, max(abs(prc)) as max_price, min(abs(prc)) as min_price
+    from stocks2016.d2010
+    where prc is not null and date_part('dow', retdate) = 3 and date_part('month', retdate) = 1
+    group by permno
+    having count(distinct retdate) = 4) as InnerQ;")
+dbGetQuery(first_database,qn_2i)
+```
+
+
+(j)
+
+```{r}
+qn_2j <- c("select avg(abs(prc)) as avg_price
+from stocks2016.d2010
+where permno in
+    (select permno
+    from stocks2016.d2010
+    where prc is not null and date_part('dow', retdate) = 2 and date_part('month', retdate) = 1
+    group by permno
+    having count(distinct retdate) = 4)
+    and date_part('dow', retdate) = 2 and date_part('month', retdate) = 1;")
+dbGetQuery(first_database,qn_2j)
+```
+
 
 ## Q. (2)
 
