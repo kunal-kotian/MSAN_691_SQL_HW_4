@@ -83,7 +83,29 @@ dbGetQuery(first_database,qn_sd_4)
 (5)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_5 <- c("select outerlhs.permno, outerlhs.price_first_day, outerrhs.price_last_day
+from
+    (select lhs.permno, rhs.prc as price_first_day
+        from
+            (select permno, min(retdate) as date_first
+            from stocks2016.d2010
+            group by permno) as lhs
+        inner join
+            (select * from stocks2016.d2010) as rhs
+        on lhs.permno = rhs.permno
+        and lhs.date_first = rhs.retdate) as outerlhs
+inner join
+    (select lhs.permno, rhs.prc as price_last_day
+        from
+            (select permno, max(retdate) as date_last
+            from stocks2016.d2010
+            group by permno) as lhs
+        inner join
+            (select * from stocks2016.d2010) as rhs
+        on lhs.permno = rhs.permno
+        and lhs.date_last = rhs.retdate) as outerrhs
+on outerlhs.permno = outerrhs.permno;")
+dbGetQuery(first_database,qn_sd_5)
 ```
 
 (6)
