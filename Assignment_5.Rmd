@@ -1,0 +1,81 @@
+---
+title: "HW #5"
+author: "Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+---------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy = F, 
+                      tidy.opts = list(blank = F, width.cutoff = 70))
+library(RPostgreSQL)
+library(tidyverse)
+library(pastecs)
+library(GGally)
+drv <- dbDriver("PostgreSQL")
+first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
+```
+
+
+# Stock Data Questions
+
+(1)
+
+```{r R.options = list(max.print = 10)}
+qn_sd_1 <- c("select lhs.permno, lhs.max_prc as max_prc_2010, rhs.max_prc as max_prc_2011
+from 
+    (select permno, max(abs(prc)) as max_prc
+    from stocks2016.d2010
+    group by permno) as lhs
+inner join
+    (select permno, max(abs(prc)) as max_prc
+    from stocks2016.d2011
+    group by permno) as rhs
+on lhs.permno = rhs.permno;")
+dbGetQuery(first_database,qn_sd_1)
+```
+
+(2)
+
+```{r R.options = list(max.print = 10)}
+qn_sd_2 <- c("select count(rhs.permno) as num_of_permnos
+from
+    (select distinct permno from stocks2016.d2010) as lhs
+left join
+    (select distinct permno from stocks2016.d2011) as rhs
+on lhs.permno = rhs.permno;")
+dbGetQuery(first_database,qn_sd_2)
+```
+
+(3)
+
+```{r R.options = list(max.print = 10)}
+qn_sd_3 <- c("select lhs.permno, lhs.date_first, rhs.date_last
+from 
+    (select permno, min(retdate) as date_first
+    from stocks2016.d2010
+    group by permno) as lhs
+inner join
+    (select permno, max(retdate) as date_last
+    from stocks2016.d2010
+    group by permno) as rhs
+on lhs.permno = rhs.permno;")
+dbGetQuery(first_database,qn_sd_3)
+```
+
+(4)
+
+```{r R.options = list(max.print = 10)}
+qn_sd_4 <- c("select lhs.permno, rhs.prc
+from
+    (select permno, min(retdate) as date_first
+    from stocks2016.d2010
+    group by permno) as lhs
+inner join
+    (select * from stocks2016.d2010) as rhs
+on lhs.permno = rhs.permno
+and lhs.date_first = rhs.retdate;")
+dbGetQuery(first_database,qn_sd_4)
+```
