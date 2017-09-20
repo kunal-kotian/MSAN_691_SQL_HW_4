@@ -79,3 +79,85 @@ on lhs.permno = rhs.permno
 and lhs.date_first = rhs.retdate;")
 dbGetQuery(first_database,qn_sd_4)
 ```
+
+(5)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(6)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(7)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(8)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(9)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(10)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(11)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+
+# MTA Data Questions
+
+(1)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(2)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(3)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(4)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(5)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
+(6)
+
+```{r R.options = list(max.print = 10)}
+
+```
+
