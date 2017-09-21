@@ -126,7 +126,16 @@ dbGetQuery(first_database,qn_sd_6)
 (7)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_7 <- c("select lhs.permno, rhs.date_first, lhs.retdate
+from
+    (select * from stocks2016.d2010
+    where abs(prc) > 200) as lhs
+left join
+    (select permno, min(retdate) as date_first
+    from stocks2016.d2010
+    group by permno) as rhs
+on lhs.permno = rhs.permno;")
+dbGetQuery(first_database,qn_sd_7)
 ```
 
 (8)
