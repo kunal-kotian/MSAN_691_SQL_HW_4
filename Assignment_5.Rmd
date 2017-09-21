@@ -141,25 +141,63 @@ dbGetQuery(first_database,qn_sd_7)
 (8)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_8 <- c("select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc
+    from stocks2016.d2010
+    group by dow, year
+union
+select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc
+    from stocks2016.d2011
+    group by dow, year
+order by year;")
+dbGetQuery(first_database,qn_sd_8)
 ```
 
 (9)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_9 <- c("select yr2010.dow, yr2010.avgprc2010, yr2011.avgprc2011   
+from
+    (select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc2010
+    from stocks2016.d2010
+    group by dow, year) as yr2010
+join
+    (select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc2011
+    from stocks2016.d2011
+    group by dow, year) as yr2011
+on yr2010.dow = yr2011.dow;")
+dbGetQuery(first_database,qn_sd_9)
 ```
 
 (10)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_10 <- c("select lhs.permno, avg(lhs.tues/rhs.mon - 1)*100 as avgprc
+from
+    (select permno, retdate, abs(prc) as tues
+    from stocks2016.d2010 where date_part('dow', retdate) = 2) as lhs
+join
+    (select permno, retdate, abs(prc) as mon
+    from stocks2016.d2010 where date_part('dow', retdate) = 1) as rhs
+on lhs.permno = rhs.permno
+and lhs.retdate = rhs.retdate + 1
+group by lhs.permno;")
+dbGetQuery(first_database,qn_sd_10)
 ```
 
 (11)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_11 <- c("select lhs.permno, rhs.first_date, lhs.last_date
+from
+    (select permno, min(retdate) as first_date
+    from stocks2016.d2010
+    group by permno) as rhs
+join
+    (select permno, max(retdate) as last_date
+    from stocks2016.d2011
+    group by permno) as lhs
+on rhs.permno = lhs.permno;")
+dbGetQuery(first_database,qn_sd_11)
 ```
 
 
