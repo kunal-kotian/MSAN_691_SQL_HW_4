@@ -220,7 +220,7 @@ dbGetQuery(first_database,MTA_Q1)
 ```{r R.options = list(max.print = 10)}
 MTA_Q2 <- c("select plaza, avg(ez + cash)
 from --get the avg number of car of any day for any plaza 
-    (select plaza,mtadt,avg(vehiclesez) as ez, avg(vehiclescash) as cash
+    (select plaza,mtadt,sum(vehiclesez) as ez, sum(vehiclescash) as cash
     from cls.mta
     group by plaza,mtadt)as q1
 group by plaza ;")
