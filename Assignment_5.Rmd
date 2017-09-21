@@ -168,36 +168,73 @@ dbGetQuery(first_database,qn_sd_7)
 (1)
 
 ```{r R.options = list(max.print = 10)}
-
+MTA_Q1 <- c("select count(distinct plaza)
+from cls.mta;")
+dbGetQuery(first_database,MTA_Q1)
 ```
 
 (2)
 
 ```{r R.options = list(max.print = 10)}
-
+MTA_Q2 <- c("select plaza, avg(ez + cash)
+from --get the avg number of car of any day for any plaza 
+    (select plaza,mtadt,avg(vehiclesez) as ez, avg(vehiclescash) as cash
+    from cls.mta
+    group by plaza,mtadt)as q1
+group by plaza ;")
+dbGetQuery(first_database,MTA_Q2)
 ```
 
 (3)
 
 ```{r R.options = list(max.print = 10)}
-
+MTA_Q3 <- c("select date_part('dow', mtadt) as day_of_week, sum(vehiclesez)as sum
+from cls.mta
+where plaza = 1 
+group by day_of_week
+order by sum desc
+limit 1;")
+dbGetQuery(first_database,MTA_Q3)
 ```
 
 (4)
 
 ```{r R.options = list(max.print = 10)}
-
+MTA_Q4 <- c("select day_of_week,plaza, ez/(cash+ez) ::float as ratio
+from(
+    select date_part('dow', mtadt) as day_of_week, plaza, 
+            sum(vehiclesez) as ez, sum(vehiclescash) as cash
+    from cls.mta
+    where direction = 'O'
+    group by day_of_week, plaza)as q1
+order by ratio 
+limit 5;")
+dbGetQuery(first_database,MTA_Q4)
 ```
 
 (5)
 
 ```{r R.options = list(max.print = 10)}
-
+MTA_Q5 <- c("select date_part('dow', mtadt) as day_of_week, avg(vehiclesez)
+from cls.mta 
+where plaza = 1 and direction = 'O'
+group by day_of_week
+order by day_of_week;")
+dbGetQuery(first_database,MTA_Q5)
 ```
 
 (6)
 
 ```{r R.options = list(max.print = 10)}
-
+MTA_Q6 <- c("select day_of_week, ez/(cash+ez) ::float as ratio
+from(
+    select date_part('dow', mtadt) as day_of_week, plaza, 
+            sum(vehiclesez) as ez, sum(vehiclescash) as cash
+    from cls.mta
+    where direction = 'O'
+    group by day_of_week, plaza)as q1
+where plaza = 1
+order by day_of_week;")
+dbGetQuery(first_database,MTA_Q6)
 ```
 
