@@ -40,7 +40,7 @@ dbGetQuery(first_database,qn_sd_1)
 (2)
 
 ```{r R.options = list(max.print = 10)}
-qn_sd_2 <- c("select count(rhs.permno) as num_of_permnos
+qn_sd_2 <- c("select count(lhs.permno) - count(rhs.permno) as num_of_permnos
 from
     (select distinct permno from stocks2016.d2010) as lhs
 left join
