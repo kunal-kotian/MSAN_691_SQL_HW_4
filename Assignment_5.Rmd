@@ -111,7 +111,16 @@ dbGetQuery(first_database,qn_sd_5)
 (6)
 
 ```{r R.options = list(max.print = 10)}
-
+qn_sd_6 <- c("select lhs.permno, rhs.retdate as date_max_vol
+from
+    (select permno, max(vol) as max_vol
+    from stocks2016.d2010
+    group by permno) as lhs
+inner join
+    (select * from stocks2016.d2010) as rhs
+on lhs.permno = rhs.permno
+and lhs.max_vol = rhs.vol;")
+dbGetQuery(first_database,qn_sd_6)
 ```
 
 (7)
