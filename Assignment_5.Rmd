@@ -141,11 +141,13 @@ dbGetQuery(first_database,qn_sd_7)
 (8)
 
 ```{r R.options = list(max.print = 10)}
-qn_sd_8 <- c("select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc
+qn_sd_8 <- c("select date_part('year',retdate) as year, 
+date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc
     from stocks2016.d2010
     group by dow, year
 union
-select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc
+select date_part('year',retdate) as year,
+date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc
     from stocks2016.d2011
     group by dow, year
 order by year;")
@@ -157,11 +159,13 @@ dbGetQuery(first_database,qn_sd_8)
 ```{r R.options = list(max.print = 10)}
 qn_sd_9 <- c("select yr2010.dow, yr2010.avgprc2010, yr2011.avgprc2011   
 from
-    (select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc2010
+    (select date_part('year',retdate) as year,
+date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc2010
     from stocks2016.d2010
     group by dow, year) as yr2010
 join
-    (select date_part('year',retdate) as year, date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc2011
+    (select date_part('year',retdate) as year,
+date_part('dow',retdate) as dow, avg(abs(prc)) as avgprc2011
     from stocks2016.d2011
     group by dow, year) as yr2011
 on yr2010.dow = yr2011.dow;")
@@ -246,7 +250,7 @@ from(
     where direction = 'O'
     group by day_of_week, plaza)as q1
 order by ratio 
-limit 5;")
+limit 1;")
 dbGetQuery(first_database,MTA_Q4)
 ```
 
