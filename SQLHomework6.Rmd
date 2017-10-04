@@ -23,11 +23,13 @@ first_database <- dbConnect(drv, dbname = "msan691", host = "localhost", port = 
 (1)
 
 ```{r R.options = list(max.print = 10)}
-q_1 <- c("select max(ret) as median from
-(select ret, ntile(4) over (order by ret) as quartile
+q_1 <- c("select avg(ret::numeric)
+from
+(select count(1) over () as total, ROW_NUMBER() over (order by ret), ret
 from stocks2016.d2010
-where retdate = '2010-01-04' and ret != 'B' and ret != 'C')q1
-where quartile = 2;")
+where 
+retdate = '2010-01-04' and ret != 'B' and ret!= 'C') as lhs
+where ROW_NUMBER in ((total+1)/2,(total + 2)/2);")
 dbGetQuery(first_database, q_1)
 ```
 
@@ -62,7 +64,9 @@ dbGetQuery(first_database, q_4)
 (5)
 
 ```{r R.options = list(max.print = 10)}
-q_5 <- c("")
+q_5 <- c("select tic, count(tic) over(order by tic) -1 as count from stocks2016.fnd
+where fyear = 2010 and tic is not null and tic >= 'A'
+order by tic;")
 dbGetQuery(first_database, q_5)
 ```
 
@@ -100,11 +104,14 @@ dbGetQuery(first_database, q_8)
 (9)
 
 ```{r R.options = list(max.print = 10)}
-q_9 <- c("select permno, permco, count(retdate) as within_10_pct
+q_9 <- c("select permno,permco,  sum(case1) 
 from
-(select permno, permco, prc, retdate, max(prc) over (partition by permno, permco) as max_prc
-from stocks2016.d2010) q1
-where prc >= (max_prc*.9)
+(
+select permno, permco, case when prc >= max_9 then 1 else 0 end as case1
+from
+(
+select permno,permco, prc, .9*max(prc) over(partition by permno)as max_9
+from stocks2016.d2010) as lhs) as more
 group by permno, permco;")
 dbGetQuery(first_database, q_9)
 ```
@@ -112,7 +119,13 @@ dbGetQuery(first_database, q_9)
 (10)
 
 ```{r R.options = list(max.print = 10)}
-q_10 <- c("")
+q_10 <- c("select lhs.retdate,lhs.permno, lhs.permco, lhs.prc, lhs.row_num as numberofdays
+from 
+(select retdate,permno, permco, prc, ROW_NUMBER() over(partition by permno, permco order by retdate) as row_num
+,max(prc) over(partition by permno, permco) as maxp
+from stocks2016.d2010 order by permno, permco, retdate) as lhs
+where lhs.prc = lhs.maxp;
+")
 dbGetQuery(first_database, q_10)
 ```
 
