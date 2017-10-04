@@ -36,27 +36,30 @@ dbGetQuery(first_database, q_1)
 (2)
 
 ```{r R.options = list(max.print = 10)}
-q_2 <- c("select permno, log(sum(vol))
-from stocks2016.d2010
-group by permno
-order by permno")
-data2 <- dbGetQuery(first_database, q_2)
-ggplot(data = data2, aes(x = data2$log)) +
-  geom_histogram(bins = 20, fill = "white", color = "black")+
-  xlab("Log of Total Volume")+
-  ylab("Count")
+q_2 <- c("select count(permno), round(sumOfVol) as sv 
+FROM
+    (select permno, log(sum(vol)) as sumOfVol 
+    FROM stocks2016.d2010 
+    where date_part('year', retdate) = 2010 and vol!=0 
+    group by permno) as LHS
+group by 2;")
+frq2 = dbGetQuery(first_database,q_2)
+frq2 %>% ggplot() + geom_bar(aes(x = frq2$sv, y = frq2$count), stat = "identity") + xlab('Log of Total Volume Per Stock') + ylab('Frequency')
 ```
 
 (3)
 
 ```{r R.options = list(max.print = 10)}
-qn_pt1_3 <- c("select log(sum(tot_vol_per_stock) over(order by tot_vol_per_stock)) as cumul_log_vol
-from (select sum(vol) as tot_vol_per_stock
-    from stocks2016.d2010
-    group by permno) as InnerQ;")
+qn_pt1_3 <- c("select sum(count) over (ORDER BY sv) as cumul_sum, sv 
+FROM
+    (select count(permno), round(log(sumOfVol)) as sv 
+    FROM
+        (select permno, sum(vol) as sumOfVol 
+        FROM stocks2016.d2010 
+        where date_part('year', retdate) = 2010 and vol!=0 group by permno) as LHS
+    group by sv) as allof;")
 frq3 = dbGetQuery(first_database,qn_pt1_3)
-mydata = frq3$cumul_log_vol
-qplot(unique(mydata), ecdf(mydata)(unique(mydata))*length(mydata), geom='step', main = '', xlab = 'Cumulative log of total volume per stock', ylab = 'Cumulative frequency')
+frq3 %>% ggplot() + geom_bar(aes(x = frq3$sv, y = frq3$cumul_sum), stat = "identity") + xlab('Log of Total Volume Per Stock') + ylab('Cumulative Frequency')
 ```
 
 (4)
