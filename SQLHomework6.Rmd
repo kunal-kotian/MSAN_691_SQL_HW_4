@@ -1,0 +1,131 @@
+---
+title: "Homework #6"
+output: pdf_document
+authors: Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian
+date: October 5, 2017
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy = F, 
+                      tidy.opts = list(blank = F, width.cutoff = 70))
+library(RPostgreSQL)
+library(tidyverse)
+library(pastecs)
+library(GGally)
+require("RPostgreSQL")
+drv <- dbDriver("PostgreSQL")
+first_database <- dbConnect(drv, dbname = "msan691", host = "localhost", port = 5432, user = "user", password = "password")
+
+```
+
+####Stock Questions
+
+(1)
+
+```{r R.options = list(max.print = 10)}
+q_1 <- c("select max(ret) as median from
+(select ret, ntile(4) over (order by ret) as quartile
+from stocks2016.d2010
+where retdate = '2010-01-04' and ret != 'B' and ret != 'C')q1
+where quartile = 2;")
+dbGetQuery(first_database, q_1)
+```
+
+(2)
+
+```{r R.options = list(max.print = 10)}
+q_2 <- c("select permno, log(sum(vol))
+from stocks2016.d2010
+group by permno
+order by permno")
+data2 <- dbGetQuery(first_database, q_2)
+ggplot(data = data2, aes(x = data2$log)) +
+  geom_histogram(bins = 20, fill = "white", color = "black")+
+  xlab("Log of Total Volume")+
+  ylab("Count")
+```
+
+(3)
+
+```{r R.options = list(max.print = 10)}
+q_3 <- c("")
+dbGetQuery(first_database, q_3)
+```
+
+(4)
+
+```{r R.options = list(max.print = 10)}
+q_4 <- c("")
+dbGetQuery(first_database, q_4)
+```
+
+(5)
+
+```{r R.options = list(max.print = 10)}
+q_5 <- c("")
+dbGetQuery(first_database, q_5)
+```
+
+(6)
+
+```{r R.options = list(max.print = 10)}
+q_6 <- c("")
+dbGetQuery(first_database, q_6)
+```
+
+(7)
+
+```{r R.options = list(max.print = 10)}
+q_7 <- c("select prc, permno, permco, retdate,
+prc - lag(prc) over () as nominal_diff
+from stocks2016.d2010
+where prc is not null;")
+dbGetQuery(first_database, q_7)
+```
+
+(8)
+
+```{r R.options = list(max.print = 10)}
+q_8 <- c("select RHS2.prc, LHS.permno, LHS.permco, RHS2.retdate,
+RHS2.prc - lag(RHS2.prc) over (partition by LHS.permno,LHS.permco) as nominal_diff
+from 
+(select distinct permno, permco from stocks2016.d2010) as LHS
+cross join
+(select distinct retdate from stocks2016.d2010) as RHS
+left join stocks2016.d2010 as RHS2
+on LHS.permno = RHS2.permno and LHS.permco = RHS2.permco and RHS.retdate = RHS2.retdate;")
+dbGetQuery(first_database, q_8)
+```
+
+(9)
+
+```{r R.options = list(max.print = 10)}
+q_9 <- c("select permno, permco, count(retdate) as within_10_pct
+from
+(select permno, permco, prc, retdate, max(prc) over (partition by permno, permco) as max_prc
+from stocks2016.d2010) q1
+where prc >= (max_prc*.9)
+group by permno, permco;")
+dbGetQuery(first_database, q_9)
+```
+
+(10)
+
+```{r R.options = list(max.print = 10)}
+q_10 <- c("")
+dbGetQuery(first_database, q_10)
+```
+
+(11)
+
+```{r R.options = list(max.print = 10)}
+q_11 <- c("")
+dbGetQuery(first_database, q_11)
+```
+
+####LTV Questions
+
+(1)
+
+
+```
