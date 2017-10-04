@@ -14,7 +14,7 @@ library(pastecs)
 library(GGally)
 require("RPostgreSQL")
 drv <- dbDriver("PostgreSQL")
-first_database <- dbConnect(drv, dbname = "msan691", host = "localhost", port = 5432, user = "user", password = "password")
+first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
 
 ```
 
@@ -54,6 +54,7 @@ qn_pt1_3 <- c("select log(sum(tot_vol_per_stock) over(order by tot_vol_per_stock
 from (select sum(vol) as tot_vol_per_stock
     from stocks2016.d2010
     group by permno) as InnerQ;")
+frq3 = dbGetQuery(first_database,qn_pt1_3)
 mydata = frq3$cumul_log_vol
 qplot(unique(mydata), ecdf(mydata)(unique(mydata))*length(mydata), geom='step', main = '', xlab = 'Cumulative log of total volume per stock', ylab = 'Cumulative frequency')
 ```
