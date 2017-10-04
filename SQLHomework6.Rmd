@@ -50,8 +50,12 @@ ggplot(data = data2, aes(x = data2$log)) +
 (3)
 
 ```{r R.options = list(max.print = 10)}
-q_3 <- c("")
-dbGetQuery(first_database, q_3)
+qn_pt1_3 <- c("select log(sum(tot_vol_per_stock) over(order by tot_vol_per_stock)) as cumul_log_vol
+from (select sum(vol) as tot_vol_per_stock
+    from stocks2016.d2010
+    group by permno) as InnerQ;")
+mydata = frq3$cumul_log_vol
+qplot(unique(mydata), ecdf(mydata)(unique(mydata))*length(mydata), geom='step', main = '', xlab = 'Cumulative log of total volume per stock', ylab = 'Cumulative frequency')
 ```
 
 (4)
