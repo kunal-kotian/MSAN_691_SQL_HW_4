@@ -5,7 +5,7 @@ author: "Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian"
 date: October 5, 2017
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE, tidy = F, 
                       tidy.opts = list(blank = F, width.cutoff = 70))
 library(RPostgreSQL)
@@ -14,8 +14,7 @@ library(pastecs)
 library(GGally)
 require("RPostgreSQL")
 drv <- dbDriver("PostgreSQL")
-first_database <- dbConnect(drv, dbname = "msan691", host = "localhost", port = 5432, user = "hollycapell", password = "postgres")
-
+first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
 ```
 
 ####Stock Questions
@@ -44,7 +43,9 @@ FROM
     group by permno) as LHS
 group by 2;")
 frq2 = dbGetQuery(first_database,q_2)
-frq2 %>% ggplot() + geom_bar(aes(x = frq2$sv, y = frq2$count), stat = "identity") + xlab('Log of Total Volume Per Stock') + ylab('Frequency')
+frq2 %>% ggplot() + 
+  geom_bar(aes(x = frq2$sv, y = frq2$count), stat = "identity") + 
+  xlab('Log of Total Volume Per Stock') + ylab('Frequency')
 ```
 
 (3)
@@ -59,14 +60,18 @@ FROM
         where date_part('year', retdate) = 2010 and vol!=0 group by permno) as LHS
     group by sv) as allof;")
 frq3 = dbGetQuery(first_database,qn_pt1_3)
-frq3 %>% ggplot() + geom_bar(aes(x = frq3$sv, y = frq3$cumul_sum), stat = "identity") + xlab('Log of Total Volume Per Stock') + ylab('Cumulative Frequency')
+frq3 %>% ggplot() + 
+  geom_bar(aes(x = frq3$sv, y = frq3$cumul_sum), stat = "identity") + 
+  xlab('Log of Total Volume Per Stock') + 
+  ylab('Cumulative Frequency')
 ```
 
 (4)
 
 ```{r R.options = list(max.print = 10)}
 # Extract data for plotting
-q_4 <- c("select log(sumOfVol) as logSumofVol, log(sum(log(sumOfVol)) over(order by log(sumOfVol))) as cumlogSumofVol
+q_4 <- c("select log(sumOfVol) as logSumofVol,
+log(sum(log(sumOfVol)) over(order by log(sumOfVol))) as cumlogSumofVol
 from 
     (select sum(vol) as sumOfVol
     from stocks2016.d2010
@@ -79,9 +84,15 @@ from
 ```{r}
 # Generate plots:
 # PDF of the distribution of the log of total volume per stock
-frq4 %>% ggplot(aes(x = frq4$logsumofvol)) + stat_density(geom = "step") + xlab('Log of Total Volume Per Stock') + ylab('Probability Density')
+frq4 %>% 
+  ggplot(aes(x = frq4$logsumofvol)) + stat_density(geom = "step") + 
+  xlab('Log of Total Volume Per Stock') + 
+  ylab('Probability Density')
 # CDF of the distribution of the cumulative log of total volume per stock
-frq4 %>% ggplot(aes(x = frq4$cumlogsumofvol)) + stat_ecdf(geom = "step", pad = "FALSE") + xlab('Log of Total Volume Per Stock') + ylab('Cumulative Probability Density')
+frq4 %>% ggplot(aes(x = frq4$cumlogsumofvol)) + 
+  stat_ecdf(geom = "step", pad = "FALSE") + 
+  xlab('Log of Total Volume Per Stock') + 
+  ylab('Cumulative Probability Density')
 ```
 
 (5)
@@ -97,23 +108,30 @@ dbGetQuery(first_database, q_5)
 
 ```{r R.options = list(max.print = 10)}
 # Note:
-# The month of dec is ignored in the calculation of the number of successes as well as possibilities - because we are asked to use 2010 data and 'next month' does not exist in 2010 for Dec.
-q_6 <- c("select num_successes::float / (select (count(distinct permno) * 11) from stocks2016.d2010) as probability
+# The month of dec is ignored in the calculation of the number of successes 
+# as well as possibilities - because we are asked to use 2010 data and 
+# 'next month' does not exist in 2010 for Dec.
+q_6 <- c("select num_successes::float / (select (count(distinct permno) * 11) 
+from stocks2016.d2010) as probability
 from
     (select count(1) as num_successes
     from(
-        select permno, month, prc_diff_current, lead(prc_diff_current, 1) over() as prc_diff_next
+        select permno, month, prc_diff_current, 
+lead(prc_diff_current, 1) over() as prc_diff_next
         from
             (select permno, month, (close_val - open_val) as prc_diff_current
             from
                 (select permno, date_part('month', retdate) as month, 
-                last_value(abs(prc)) over(partition by permno, date_part('month', retdate)) as close_val,
-                first_value(abs(prc)) over(partition by permno, date_part('month', retdate)) as open_val
+                last_value(abs(prc)) over(partition by permno, 
+date_part('month', retdate)) as close_val,
+                first_value(abs(prc)) over(partition by permno, 
+date_part('month', retdate)) as open_val
                 from stocks2016.d2010
                 where prc is not null and retdate is not null) as InnerQ1
             group by 1, 2, 3
             order by 1, 2) as InnerQ2) as InnerQ3
-    where prc_diff_current > 0 and prc_diff_next > 0 and month <> 12) as InnerQ4;")
+    where prc_diff_current > 0 and prc_diff_next > 0 
+and month <> 12) as InnerQ4;")
 dbGetQuery(first_database, q_6)
 ```
 
@@ -161,7 +179,8 @@ dbGetQuery(first_database, q_9)
 ```{r R.options = list(max.print = 10)}
 q_10 <- c("select lhs.retdate,lhs.permno, lhs.permco, lhs.prc, lhs.row_num as numberofdays
 from 
-(select retdate,permno, permco, prc, ROW_NUMBER() over(partition by permno, permco order by retdate) as row_num
+(select retdate,permno, permco, prc, 
+ROW_NUMBER() over(partition by permno, permco order by retdate) as row_num
 ,max(prc) over(partition by permno, permco) as maxp
 from stocks2016.d2010 order by permno, permco, retdate) as lhs
 where lhs.prc = lhs.maxp;
@@ -174,10 +193,12 @@ dbGetQuery(first_database, q_10)
 ```{r R.options = list(max.print = 10)}
 q_11 <- c("select permno, permco, numdays
 from(
-select permno, permco, retdate as date1, sum(different_days) over (partition by permno, permco order
+select permno, permco, retdate as date1, 
+sum(different_days) over (partition by permno, permco order
 by retdate asc) as numdays, prc, maximum
 from(
-select permno, permco, retdate, case when retdate - lag(retdate) over () > 0 
+select permno, permco, retdate, 
+case when retdate - lag(retdate) over () > 0 
 then retdate - lag(retdate) over ()
 else Null end as different_days, 
 prc, max(prc) over(partition by permco, permno) as maximum 
@@ -193,12 +214,14 @@ dbGetQuery(first_database, q_11)
 (1)
 
 ```{r R.options = list(max.print = 10)}
-q_LTV1 <- c("select sum(case when dt = min_date and transtype = 'Unit' and subs > 0 then 1 else 0 end)::float/count(distinct userid) as percent
+q_LTV1 <- c("select sum(case when dt = min_date and transtype = 'Unit' 
+and subs > 0 then 1 else 0 end)::float/count(distinct userid) as percent
 from
-(select userid, transtype, dt, min(dt) over (partition by userid) as min_date,
-sum(case when transtype = 'Subscription' then 1 else 0 end) over (partition by userid) as subs from 
+(select userid, transtype, dt, 
+min(dt) over (partition by userid) as min_date,
+sum(case when transtype = 'Subscription' then 1 else 0 end) 
+over (partition by userid) as subs from 
 cls.ltv) q1;")
-
 ```
 
 
@@ -210,7 +233,6 @@ q_LTV2 <- c("select distinct(userid) from
 inner join
 (select userid from cls.ltv where transtype = 'Subscription') as RHS
 using(userid);")
-
 ```
 
 
@@ -221,7 +243,6 @@ q_LTV3 <- c("select avg(time_diff) from
 (select dt - lag(dt) over (partition by userid order by dt) as time_diff from cls.ltv 
 where transtype = 'Unit') q1
 where time_diff is not null;")
-
 ```
 
 (4)
@@ -247,14 +268,15 @@ where dt > current_date - '6 month'::interval
 from Trans) as tot
 where min_date < current_date - '6 month'::interval) as selected
 where index < 4;")
-
 ```
 
 (6)
 ```{r R.options = list(max.print = 10)}
 q_LTV6 <- c("select row_number as months, avg(total_rev) as month_mult 
 from
-(select cohort, row_number() over (partition by cohort, month, rev/lag(rev) over (partition by cohort order by month)) as total_rev 
+(select cohort, 
+row_number() over (partition by cohort, month, 
+rev/lag(rev) over (partition by cohort order by month)) as total_rev 
 from 
 (select cohort, date_trunc('month', dt)::date as month, sum(amt) as rev
 from 
@@ -262,9 +284,8 @@ from
 first_value(dt) over (partition by userid order by dt))::date as cohort, dt
 from cls.ltv) q1
 where cohort < date_trunc('month', now())::date 
-group by 1,2)q2 )q3
+group by 1,2)q2)q3
 group by 1;")
-
 ```
 
 In order to find the LTV of a user up until a certain month, you can multiply the initial (first month) revenue by each of the month multipliers preceding that month and sum these amounts. This calculation gives the revenue that a customer will generate after x months. 
