@@ -241,9 +241,13 @@ dbGetQuery(first_database, q_LTV4)
 ```{r R.options = list(max.print = 10)}
 q_LTV5 <- c("select distinct userid, max(amt) over (partition by userid, index), index
 from
-(select userid, amt, NTILE(4) over (partition by userid order by amt) as index
-where date_part("month", dt) < 7 
-from Trans) as tot;")
+(select * from 
+(select userid, amt, dt, NTILE(4) over (partition by userid order by amt) as index, 
+min(dt) over (partition by userid) as min_date
+where dt > current_date - '6 month'::interval
+from Trans) as tot
+where min_date < current_date - '6 month'::interval) as selected
+where index < 4;")
 dbGetQuery(first_database, q_LTV5)
 ```
 
