@@ -65,8 +65,23 @@ frq3 %>% ggplot() + geom_bar(aes(x = frq3$sv, y = frq3$cumul_sum), stat = "ident
 (4)
 
 ```{r R.options = list(max.print = 10)}
-q_4 <- c("")
-dbGetQuery(first_database, q_4)
+# Extract data for plotting
+q_4 <- c("select log(sumOfVol) as logSumofVol, log(sum(log(sumOfVol)) over(order by log(sumOfVol))) as cumlogSumofVol
+from 
+    (select sum(vol) as sumOfVol
+    from stocks2016.d2010
+    where vol <> 0
+    group by permno) as InnerQ;")
+(frq4 = dbGetQuery(first_database, q_4))
+```
+
+
+```{r}
+# Generate plots:
+# PDF of the distribution of the log of total volume per stock
+frq4 %>% ggplot(aes(x = frq4$logsumofvol)) + stat_density(geom = "step") + xlab('Log of Total Volume Per Stock') + ylab('Probability Density')
+# CDF of the distribution of the cumulative log of total volume per stock
+frq4 %>% ggplot(aes(x = frq4$cumlogsumofvol)) + stat_ecdf(geom = "step", pad = "FALSE") + xlab('Log of Total Volume Per Stock') + ylab('Cumulative Probability Density')
 ```
 
 (5)
