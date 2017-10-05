@@ -238,7 +238,6 @@ dbGetQuery(first_database, q_LTV4)
 
 
 (5)
-
 ```{r R.options = list(max.print = 10)}
 q_LTV5 <- c("select distinct userid, max(amt) over (partition by userid, index), index
 from
