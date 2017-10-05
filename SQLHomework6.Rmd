@@ -1,7 +1,7 @@
 ---
 title: "Homework #6"
 output: pdf_document
-authors: Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian
+author: "Siavash Mortezavi, Jason Liu, Holly Capell, Sangyu Shen, Kunal Kotian"
 date: October 5, 2017
 ---
 
@@ -14,7 +14,7 @@ library(pastecs)
 library(GGally)
 require("RPostgreSQL")
 drv <- dbDriver("PostgreSQL")
-first_database <- dbConnect(drv, dbname = "msan_691", host = "localhost", port = 5432, user = "postgres", password = "postgres")
+first_database <- dbConnect(drv, dbname = "msan691", host = "localhost", port = 5432, user = "hollycapell", password = "postgres")
 
 ```
 
@@ -193,21 +193,12 @@ dbGetQuery(first_database, q_11)
 (1)
 
 ```{r R.options = list(max.print = 10)}
-q_LTV1 <- c("select RHS.purchased_sub::float/LHS.first_purchase_unit as percent from
-(select count(distinct userid) as first_purchase_unit from
-(select 
-userid, transtype,
-first_value(transtype) over (partition by userid order by dt) as first_purchase
-from cls.ltv) q1
-where first_purchase = 'Unit') as LHS
-cross join
-(select count(distinct userid) as purchased_sub from
-(select 
-userid, transtype,
-first_value(transtype) over (partition by userid order by dt) as first_purchase
-from cls.ltv) q1
-where first_purchase = 'Unit' and transtype = 'Subscription') as RHS;")
-dbGetQuery(first_database, q_LTV1)
+q_LTV1 <- c("select sum(case when dt = min_date and transtype = 'Unit' and subs > 0 then 1 else 0 end)::float/count(distinct userid) as percent
+from
+(select userid, transtype, dt, min(dt) over (partition by userid) as min_date,
+sum(case when transtype = 'Subscription' then 1 else 0 end) over (partition by userid) as subs from 
+cls.ltv) q1;")
+
 ```
 
 
@@ -219,7 +210,7 @@ q_LTV2 <- c("select distinct(userid) from
 inner join
 (select userid from cls.ltv where transtype = 'Subscription') as RHS
 using(userid);")
-dbGetQuery(first_database, q_LTV2)
+
 ```
 
 
@@ -230,7 +221,7 @@ q_LTV3 <- c("select avg(time_diff) from
 (select dt - lag(dt) over (partition by userid order by dt) as time_diff from cls.ltv 
 where transtype = 'Unit') q1
 where time_diff is not null;")
-dbGetQuery(first_database, q_LTV3)
+
 ```
 
 (4)
@@ -242,7 +233,6 @@ q_LTV4 <- c("select avg(time_diff) from
 where transtype = 'Unit') q1
 where time_diff is not null)q2
 where row_number in ((total+1)/2,(total + 2)/2);")
-dbGetQuery(first_database, q_LTV4)
 ```
 
 
@@ -257,7 +247,24 @@ where dt > current_date - '6 month'::interval
 from Trans) as tot
 where min_date < current_date - '6 month'::interval) as selected
 where index < 4;")
-dbGetQuery(first_database, q_LTV5)
+
 ```
 
+(6)
+```{r R.options = list(max.print = 10)}
+q_LTV6 <- c("select row_number as months, avg(total_rev) as month_mult 
+from
+(select cohort, row_number() over (partition by cohort, month, rev/lag(rev) over (partition by cohort order by month)) as total_rev 
+from 
+(select cohort, date_trunc('month', dt)::date as month, sum(amt) as rev
+from 
+(select userid, amt, date_trunc('month', 
+first_value(dt) over (partition by userid order by dt))::date as cohort, dt
+from cls.ltv) q1
+where cohort < date_trunc('month', now())::date 
+group by 1,2)q2 )q3
+group by 1;")
 
+```
+
+In order to find the LTV of a user up until a certain month, you can multiply the initial (first month) revenue by each of the month multipliers preceding that month and sum these amounts. This calculation gives the revenue that a customer will generate after x months. 
