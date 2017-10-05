@@ -163,7 +163,19 @@ dbGetQuery(first_database, q_10)
 (11)
 
 ```{r R.options = list(max.print = 10)}
-q_11 <- c("")
+q_11 <- c("select permno, permco, numdays
+from(
+select permno, permco, retdate as date1, sum(difdays) over (partition by permno, permco order
+by retdate asc) as numdays, prc, maximum
+from(
+select permno, permco, retdate, case when retdate - lag(retdate) over () > 0 
+then retdate - lag(retdate) over ()
+else Null end as difdays, 
+prc, max(prc) over(partition by permco, permno) as maximum 
+from stocks2016.d2010
+order by permno, permco, retdate
+limit 10000) as table1) as table2
+where maximum = prc;")
 dbGetQuery(first_database, q_11)
 ```
 
