@@ -96,15 +96,24 @@ dbGetQuery(first_database, q_5)
 (6)
 
 ```{r R.options = list(max.print = 10)}
-q_6 <- c("select diff, case when diff > 0 then 1 else 0 end, count(0) over(partition by diff)
+# Note:
+# The month of dec is ignored in the calculation of the number of successes as well as possibilities - because we are asked to use 2010 data and 'next month' does not exist in 2010 for Dec.
+q_6 <- c("select num_successes::float / (select (count(distinct permno) * 11) from stocks2016.d2010)::float as probability
 from
-(select permno, retdate, c2-c1 as diff
-from
-(select permno, retdate, 
-first_value(prc) over(partition by date_part('month',retdate)) as c1,
-last_value(prc) over(partition by date_part('month',retdate)) as c2 
-from stocks2016.d2010) as c3) as c4
-limit 500;")
+    (select count(1) as num_successes
+    from(
+        select permno, month, prc_diff_current, lead(prc_diff_current, 1) over() as prc_diff_next
+        from
+            (select permno, month, (close_val - open_val) as prc_diff_current
+            from
+                (select permno, date_part('month', retdate) as month, 
+                last_value(abs(prc)) over(partition by permno, date_part('month', retdate)) as close_val,
+                first_value(abs(prc)) over(partition by permno, date_part('month', retdate)) as open_val
+                from stocks2016.d2010
+                where prc is not null and retdate is not null) as InnerQ1
+            group by 1, 2, 3
+            order by 1, 2) as InnerQ2) as InnerQ3
+    where prc_diff_current > 0 and prc_diff_next > 0 and month <> 12) as InnerQ4;")
 dbGetQuery(first_database, q_6)
 ```
 
