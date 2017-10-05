@@ -98,7 +98,7 @@ dbGetQuery(first_database, q_5)
 ```{r R.options = list(max.print = 10)}
 # Note:
 # The month of dec is ignored in the calculation of the number of successes as well as possibilities - because we are asked to use 2010 data and 'next month' does not exist in 2010 for Dec.
-q_6 <- c("select num_successes::float / (select (count(distinct permno) * 11) from stocks2016.d2010)::float as probability
+q_6 <- c("select num_successes::float / (select (count(distinct permno) * 11) from stocks2016.d2010) as probability
 from
     (select count(1) as num_successes
     from(
